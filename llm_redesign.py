@@ -13,6 +13,12 @@ Includes CDR loop identification for nanobody redesign.
 
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 import torch
+try:
+    import intel_extension_for_pytorch
+    INTEL_AVAILABLE=True
+except Exception as e:
+    print(e)
+    INTEL_AVAILABLE=False
 from dataclasses import dataclass
 from typing import Tuple, List, Dict
 from tqdm import tqdm
@@ -66,7 +72,7 @@ class UncertaintyGuidedMutation:
     modality: str = "custom"  # "affibody", "nanobody", "affitin", or "custom"
     model_id: str = "Bo1015/proteinglm-1b-mlm"
     model_weights: str | None = None
-    device: object = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device: object = torch.device("cuda" if torch.cuda.is_available() else "xpu" if INTEL_AVAILABLE else "cpu")
     n_seq_out: int = 10
     mask_strategy: str = "top_k"  # "top_k", "threshold", or "entropy"
     mask_ratio: float = 0.3  # For top_k: fraction of positions to mask
