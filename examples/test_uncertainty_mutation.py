@@ -1,9 +1,9 @@
 """
-Test script for uncertainty-guided mutation generation.
+Test script for uncertainty-guided mutation generation with modality support.
 """
 
 import torch
-from uncertainty_guided_mutation import UncertaintyGuidedMutation
+from uncertainty_guided_mutation import UncertaintyGuidedMutation, MODALITY_TEMPLATES
 
 
 def test_basic_workflow():
@@ -104,11 +104,95 @@ def test_uncertainty_analysis():
         print(f"  {rank}. Position {pos}: uncertainty={uncertainty[pos]:.4f}")
 
 
+def test_modality_templates():
+    """Test different modality templates."""
+    print("\n" + "=" * 80)
+    print("TEST 4: Modality Templates")
+    print("=" * 80)
+
+    target_seq = "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVV"
+
+    for modality in ["affibody", "nanobody", "affitin"]:
+        print(f"\n--- Modality: {modality} ---")
+
+        mutator = UncertaintyGuidedMutation(
+            target_seq=target_seq,
+            temp_pept_seq="",
+            modality=modality,
+            use_template=True,
+            mask_ratio=0.2,
+            n_seq_out=2,
+        )
+
+        results = mutator.run()
+        print(f"Template length: {len(results['peptide_seq'])}")
+        print(f"Modality: {results['modality']}")
+        print(f"Generated: {results['generated_sequences'][0][:50]}...")
+
+
+def test_specific_residues():
+    """Test mutation of specific residues."""
+    print("\n" + "=" * 80)
+    print("TEST 5: Specific Residue Mutation")
+    print("=" * 80)
+
+    target_seq = "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVV"
+    temp_pept_seq = "HELVELLA"
+
+    residues_to_mutate = [0, 2, 4, 6]
+
+    print(f"\nPeptide: {temp_pept_seq}")
+    print(f"Residues to mutate (0-indexed): {residues_to_mutate}")
+    print(f"Positions: {[temp_pept_seq[i] for i in residues_to_mutate]}")
+
+    mutator = UncertaintyGuidedMutation(
+        target_seq=target_seq,
+        temp_pept_seq=temp_pept_seq,
+        residues_to_mutate=residues_to_mutate,
+        n_seq_out=3,
+    )
+
+    results = mutator.run()
+    print(f"\nPositions to mask: {results['positions_to_mask']}")
+    print("Generated sequences:")
+    for i, seq in enumerate(results["generated_sequences"], 1):
+        print(f"  {i}. {seq}")
+
+
+def test_custom_template():
+    """Test custom template override."""
+    print("\n" + "=" * 80)
+    print("TEST 6: Custom Template Override")
+    print("=" * 80)
+
+    target_seq = "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVV"
+    custom_template = "MYOWNSEQUENCE"
+
+    print(f"\nCustom template: {custom_template}")
+
+    mutator = UncertaintyGuidedMutation(
+        target_seq=target_seq,
+        temp_pept_seq="",
+        modality="affibody",
+        use_template=True,
+        custom_template=custom_template,
+        mask_ratio=0.3,
+        n_seq_out=2,
+    )
+
+    results = mutator.run()
+    print(f"Used template: {results['peptide_seq']}")
+    print(f"Template matches custom: {results['peptide_seq'] == custom_template}")
+
+
 if __name__ == "__main__":
     try:
         test_basic_workflow()
         test_different_mask_strategies()
         test_uncertainty_analysis()
+        test_modality_templates()
+        test_specific_residues()
+        test_custom_template()
         print("\n" + "=" * 80)
         print("All tests completed!")
         print("=" * 80)

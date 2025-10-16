@@ -24,29 +24,43 @@ for seq in results["generated_sequences"]:
     print(seq)
 ```
 
-### With Custom Weights
+### With Modalities & Templates
 
 ```python
+# Use affibody template
 mutator = UncertaintyGuidedMutation(
     target_seq="...",
-    temp_pept_seq="...",
-    model_weights="./fine_tuned_model.safetensors",
+    temp_pept_seq="",
+    modality="affibody",
+    use_template=True,
     n_seq_out=10,
 )
-results = mutator.run()
+
+# Or specify residues to mutate
+mutator = UncertaintyGuidedMutation(
+    target_seq="...",
+    temp_pept_seq="HELVELLA",
+    residues_to_mutate=[0, 2, 4, 6],
+    n_seq_out=10,
+)
 ```
 
 ### Documentation
 
+- **`MODALITY_QUICK_START.md`** - Quick start for new features
+- **`MODALITY_AND_RESIDUES_GUIDE.md`** - Comprehensive modality guide
 - **`QUICK_REFERENCE.md`** - Quick lookup for common tasks
 - **`UNCERTAINTY_GUIDED_MUTATION_GUIDE.md`** - Comprehensive guide
 - **`CUSTOM_WEIGHTS_USAGE.md`** - Loading custom weights
-- **`FEATURE_CHECKLIST.md`** - Complete feature list
+- **`NEW_FEATURES_SUMMARY.md`** - Summary of new features
 
 ### Key Features
 
 ✅ Uncertainty-driven masking
 ✅ Peptide-only mutations (target sequence fixed)
+✅ **Multiple modalities** (affibody, nanobody, affitin)
+✅ **Template sequences** for each modality
+✅ **Residue-level control** for targeted mutations
 ✅ Custom model weights support
 ✅ Multiple masking strategies
 ✅ Production-ready code
